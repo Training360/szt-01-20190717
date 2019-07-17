@@ -7,6 +7,9 @@ public class Employee {
     private int yearOfBirth;
 
     public Employee(String name, int yearOfBirth) {
+        if (yearOfBirth < 1700) {
+            throw new IllegalArgumentException("Can not be lower than 1700");
+        }
         this.name = name;
         this.yearOfBirth = yearOfBirth;
     }
