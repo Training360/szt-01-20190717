@@ -12,25 +12,36 @@ public class EmployeeTest {
     @BeforeEach
     void createEmployee() {
         System.out.println("init");
-        employee = new Employee("John Doe", 1970);
+
     }
 
     public EmployeeTest() {
         System.out.println("constructor");
     }
 
-    @Test
-    @DisplayName("Test get age with 2019")
-    void testGetAge() {
-        int age = employee.getAge(2019);
-        assertEquals(49, age);
+    @Nested
+    class EmployeeWith1970 {
+
+        @BeforeEach
+        void createEmployee() {
+            employee = new Employee("John Doe", 1970);
+        }
+
+        @Test
+        @DisplayName("Test get age with 2019")
+        void testGetAge() {
+            int age = employee.getAge(2019);
+            assertEquals(49, age);
+        }
     }
+
+
 
     @Test
     void testGetAgeWith2000() {
-        System.out.println("tc2");
+        employee = new Employee("John Doe", 1980);
         int age = employee.getAge(2000);
-        assertEquals(30, age);
+        assertEquals(20, age);
     }
 
     @Test
