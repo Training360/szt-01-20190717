@@ -7,6 +7,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,7 +39,8 @@ public class EmployeeDaoBeanIntegrationTest {
                         .addClasses(Employee.class, EmployeeDaoBean.class,
                                 DbMigrator.class)
                         .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
-                        .addAsResource("META-INF/persistence.xml", "META-INF/persistence.xml");
+                        .addAsResource("META-INF/persistence.xml", "META-INF/persistence.xml")
+                        .addAsLibraries(Maven.resolver().resolve("org.flywaydb:flyway-core:5.2.4").withoutTransitivity().asSingleFile());
     }
 
     @Test
