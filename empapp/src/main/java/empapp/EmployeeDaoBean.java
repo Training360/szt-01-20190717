@@ -24,14 +24,8 @@ public class EmployeeDaoBean {
     }
 
     @Transactional
-    public Employee saveEmployee(String name) {
-        Employee employee = new Employee(name);
+    public Employee saveEmployee(Employee employee) {
         em.persist(employee);
-
-        if (name.equals("")) {
-            sessionContext.setRollbackOnly();
-        }
-
         return employee;
     }
 

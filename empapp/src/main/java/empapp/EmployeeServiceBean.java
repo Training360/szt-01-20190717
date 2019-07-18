@@ -63,7 +63,8 @@ public class EmployeeServiceBean {
         }
         else {
             logEntryDaoBean.saveLogEntry("Save employee with name: " + name);
-            return employeeDaoBean.saveEmployee(name);
+            Employee newEmployee = new Employee(name);
+            return employeeDaoBean.saveEmployee(newEmployee);
         }
     }
 
