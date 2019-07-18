@@ -2,9 +2,11 @@ package empapp;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -30,13 +32,13 @@ public class EmployeeDaoBeanIntegrationTest {
     private DataSource dataSource;
 
     @Deployment
-    public static JavaArchive createDeployment() {
+    public static WebArchive createDeployment() {
         return
-                ShrinkWrap.create(JavaArchive.class)
+                ShrinkWrap.create(WebArchive.class)
                         .addClasses(Employee.class, EmployeeDaoBean.class,
                                 DbMigrator.class)
                         .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsManifestResource(EmptyAsset.INSTANCE, "persistence.xml");
+                        .addAsResource("META-INF/persistence.xml", "META-INF/persistence.xml");
     }
 
     @Test

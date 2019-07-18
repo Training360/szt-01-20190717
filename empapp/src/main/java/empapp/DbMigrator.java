@@ -18,7 +18,7 @@ public class DbMigrator {
     // Wildfly: @Resource(lookup = "java:/jdbc/EmployeeDS")
     // Wildfly: @Resource(mappedName = "java:/jdbc/EmployeeDS")
     // Payara: @Resource(lookup = "jdbc/EmployeeDS")
-    @Resource(lookup = "java:comp/env/jdbc/EmployeeDS")
+    @Resource(lookup = "java:/jdbc/EmployeeDS")
     private DataSource dataSource;
 
     @PostConstruct
