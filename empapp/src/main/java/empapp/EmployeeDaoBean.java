@@ -1,7 +1,6 @@
 package empapp;
 
 import javax.annotation.Resource;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -15,9 +14,6 @@ public class EmployeeDaoBean {
 
     @PersistenceContext
     private EntityManager em;
-
-    @Resource
-    private SessionContext sessionContext;
 
     public List<Employee> findEmployees() {
         return em.createQuery("select e from Employee e", Employee.class).getResultList();
