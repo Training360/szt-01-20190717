@@ -3,6 +3,7 @@ package employee;
 import employees.Employee;
 import org.junit.jupiter.api.*;
 
+import static employee.EmployeeAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class EmployeeTest {
@@ -32,6 +33,8 @@ public class EmployeeTest {
         void testGetAge() {
             int age = employee.getAge(2019);
             assertEquals(49, age);
+//            assertThat(age).isGreaterThan(20).isLessThan(200);
+            assertThat(employee).hasName("John Doe");
         }
     }
 
