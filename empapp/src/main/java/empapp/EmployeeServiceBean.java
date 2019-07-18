@@ -13,20 +13,26 @@ import javax.jms.Queue;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Stateless
 public class EmployeeServiceBean {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Inject
     private EmployeeDaoBean employeeDaoBean;
 
-    @Inject
     private LogEntryDaoBean logEntryDaoBean;
 
-    @Resource
-    private TimerService timerService;
+    private NameTrimmer nameTrimmer;
+
+    @Inject
+    public EmployeeServiceBean(EmployeeDaoBean employeeDaoBean, LogEntryDaoBean logEntryDaoBean, NameTrimmer nameTrimmer) {
+        this.employeeDaoBean = employeeDaoBean;
+        this.logEntryDaoBean = logEntryDaoBean;
+        this.nameTrimmer = nameTrimmer;
+    }
+
 
     @PostConstruct
     public void init() {
@@ -47,19 +53,18 @@ public class EmployeeServiceBean {
 
     @Transactional
     public Employee saveEmployee(String name) {
-        logEntryDaoBean.saveLogEntry("Save employee with name: " + name);
+        name = nameTrimmer.trimName(name);
 
-        Employee employee = employeeDaoBean.saveEmployee(name);
+        Optional<Employee> employee = employeeDaoBean.findEmployeeByName(name);
 
-        timerService.createTimer(5000, name);
-
-        return employee;
-    }
-
-    @Timeout
-    public void logCreateEmployee(Timer timer) {
-        String name = (String) timer.getInfo();
-        System.out.println("Employee has created: " + name);
+        if (employee.isPresent()) {
+            logEntryDaoBean.saveLogEntry("Already exists: " + name);
+            return employee.get();
+        }
+        else {
+            logEntryDaoBean.saveLogEntry("Save employee with name: " + name);
+            return employeeDaoBean.saveEmployee(name);
+        }
     }
 
     public Employee findEmployeeById(long id) {
