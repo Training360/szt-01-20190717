@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<arquillian>
+    <engine>
+        <property name="deploymentExportPath">target/deployments</property>
+    </engine>
+
+</arquillian>

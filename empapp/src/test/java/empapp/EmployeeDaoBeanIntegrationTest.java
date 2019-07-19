@@ -68,8 +68,6 @@ public class EmployeeDaoBeanIntegrationTest {
         return webArchive;
     }
 
-
-
     @Test
     public void testFindEmployees() throws Exception {
         try (Connection c = dataSource.getConnection();
@@ -83,7 +81,7 @@ public class EmployeeDaoBeanIntegrationTest {
         List<Employee> employees = employeeDaoBean.findEmployees();
 
         //List<Employee> employees = employeeDaoBean.findEmployees();
-        assertEquals(Arrays.asList("Jack Doe", "Jane Doe", "John Doe"), employees.stream()
+        assertEquals(Arrays.asList("John Doe"), employees.stream()
                 .map(Employee::getName).collect(Collectors.toList()));
     }
 
