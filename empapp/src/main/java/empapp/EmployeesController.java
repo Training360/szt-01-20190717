@@ -25,6 +25,9 @@ public class EmployeesController {
         this.facesContextProvider = facesContextProvider;
     }
 
+    public EmployeesController() {
+    }
+
     @PostConstruct
     public void init() {
         employees = employeeServiceBean.findEmployees();
