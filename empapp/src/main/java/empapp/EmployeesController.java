@@ -10,18 +10,20 @@ import java.util.List;
 @Model
 public class EmployeesController {
 
-
     private EmployeeServiceBean employeeServiceBean;
 
-    @Inject
-    public EmployeesController(EmployeeServiceBean employeeServiceBean) {
-        this.employeeServiceBean = employeeServiceBean;
-    }
+    private FacesContextProvider facesContextProvider;
 
     private List<Employee> employees;
 
     @NotBlank
     private String name;
+
+    @Inject
+    public EmployeesController(EmployeeServiceBean employeeServiceBean, FacesContextProvider facesContextProvider) {
+        this.employeeServiceBean = employeeServiceBean;
+        this.facesContextProvider = facesContextProvider;
+    }
 
     @PostConstruct
     public void init() {
@@ -30,8 +32,7 @@ public class EmployeesController {
 
     public String addEmployee() {
         employeeServiceBean.saveEmployee(name);
-        FacesContext.getCurrentInstance().getExternalContext()
-                .getFlash().put("successMessage", "Employee has created!");
+        facesContextProvider.setFlashAttribute("successMessage", "Employee has created!");
         return "employees.xhtml?faces-redirect=true";
     }
 
