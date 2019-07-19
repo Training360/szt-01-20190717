@@ -4,6 +4,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.junit.Before;
@@ -36,7 +37,10 @@ public class EmployeesControllerIntegrationTest {
         WebArchive webArchive =
                 ShrinkWrap.create(WebArchive.class)
                         .addPackage(Employee.class.getPackage())
-                        .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                        .addClass(StubFacesContextProvider.class)
+//                        .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                        .addAsWebInfResource(new StringAsset("<beans><alternatives><class>empapp.StubFacesContextProvider</class></alternatives></beans>"),
+                                "beans.xml")
                         .addAsResource("META-INF/persistence.xml", "META-INF/persistence.xml")
                         .addAsResource("employees.xml", "employees.xml")
 
@@ -72,7 +76,7 @@ public class EmployeesControllerIntegrationTest {
 
         employeesController.init();
         List<Employee> employees = employeesController.getEmployees();
-        assertEquals(1, employees);
+        assertEquals(1, employees.size());
         assertEquals("John Doe", employees.get(0).getName());
     }
 
