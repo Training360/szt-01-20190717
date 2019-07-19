@@ -10,8 +10,13 @@ import java.util.List;
 @Model
 public class EmployeesController {
 
-    @Inject
+
     private EmployeeServiceBean employeeServiceBean;
+
+    @Inject
+    public EmployeesController(EmployeeServiceBean employeeServiceBean) {
+        this.employeeServiceBean = employeeServiceBean;
+    }
 
     private List<Employee> employees;
 

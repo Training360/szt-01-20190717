@@ -33,6 +33,8 @@ public class EmployeeServiceBean {
         this.nameTrimmer = nameTrimmer;
     }
 
+    public EmployeeServiceBean() {
+    }
 
     @PostConstruct
     public void init() {
