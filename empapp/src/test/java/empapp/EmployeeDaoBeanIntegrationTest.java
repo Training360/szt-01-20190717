@@ -1,5 +1,10 @@
 package empapp;
 
+import org.dbunit.database.DatabaseDataSourceConnection;
+import org.dbunit.database.IDatabaseConnection;
+import org.dbunit.dataset.IDataSet;
+import org.dbunit.dataset.xml.XmlDataSet;
+import org.dbunit.operation.DatabaseOperation;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.GenericArchive;
@@ -7,6 +12,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,8 +60,10 @@ public class EmployeeDaoBeanIntegrationTest {
                                 DbMigrator.class, AdminRunnerBean.class)
                         .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                         .addAsResource("META-INF/persistence.xml", "META-INF/persistence.xml")
+                        .addAsResource("employees.xml", "employees.xml")
 
                         .addAsLibraries(Maven.resolver().resolve("org.flywaydb:flyway-core:5.2.4").withoutTransitivity().asSingleFile())
+                        .addAsLibraries(Maven.resolver().resolve("org.dbunit:dbunit:2.6.0").withoutTransitivity().asSingleFile())
                 ;
 
         Files.walk(Paths.get("src/main/resources"))
@@ -71,20 +79,27 @@ public class EmployeeDaoBeanIntegrationTest {
         return webArchive;
     }
 
+    @Before
+    public void initDatabase()  throws Exception {
+        IDatabaseConnection conn = new DatabaseDataSourceConnection(dataSource);
+        IDataSet data = new XmlDataSet(EmployeeDaoBeanIntegrationTest.class.getResourceAsStream("/employees.xml"));
+        DatabaseOperation.CLEAN_INSERT.execute(conn, data);
+    }
+
     @Test
     public void testFindEmployees() throws Exception {
-        try (Connection c = dataSource.getConnection();
-             PreparedStatement psDelete = c.prepareStatement("delete from employees");
-             PreparedStatement ps = c.prepareStatement("insert into employees(emp_name) values (?)")) {
-            psDelete.executeUpdate();
-            ps.setString(1, "John Doe");
-            ps.executeUpdate();
-        }
+//        try (Connection c = dataSource.getConnection();
+//             PreparedStatement psDelete = c.prepareStatement("delete from employees");
+//             PreparedStatement ps = c.prepareStatement("insert into employees(emp_name) values (?)")) {
+//            psDelete.executeUpdate();
+//            ps.setString(1, "John Doe");
+//            ps.executeUpdate();
+//        }
 
         List<Employee> employees = adminRunnerBean.call(employeeDaoBean::findEmployees);
 
         //List<Employee> employees = employeeDaoBean.findEmployees();
-        assertEquals(Arrays.asList("John Doe"), employees.stream()
+        assertEquals(Arrays.asList("Jack Doe", "Jane Doe", "John Doe"), employees.stream()
                 .map(Employee::getName).collect(Collectors.toList()));
     }
 
