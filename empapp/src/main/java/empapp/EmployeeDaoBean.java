@@ -1,6 +1,7 @@
 package empapp;
 
 import javax.annotation.Resource;
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -15,6 +16,7 @@ public class EmployeeDaoBean {
     @PersistenceContext
     private EntityManager em;
 
+    @RolesAllowed("admin")
     public List<Employee> findEmployees() {
         return em.createQuery("select e from Employee e", Employee.class).getResultList();
     }

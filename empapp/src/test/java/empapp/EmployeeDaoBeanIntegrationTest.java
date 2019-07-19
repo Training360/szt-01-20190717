@@ -40,6 +40,9 @@ public class EmployeeDaoBeanIntegrationTest {
     @Inject
     private EmployeeDaoBean employeeDaoBean;
 
+    @Inject
+    private AdminRunnerBean adminRunnerBean;
+
     @Resource(lookup = "java:/jdbc/EmployeeDS")
     private DataSource dataSource;
 
@@ -48,7 +51,7 @@ public class EmployeeDaoBeanIntegrationTest {
         WebArchive webArchive =
                 ShrinkWrap.create(WebArchive.class)
                         .addClasses(Employee.class, EmployeeDaoBean.class,
-                                DbMigrator.class)
+                                DbMigrator.class, AdminRunnerBean.class)
                         .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                         .addAsResource("META-INF/persistence.xml", "META-INF/persistence.xml")
 
@@ -78,7 +81,7 @@ public class EmployeeDaoBeanIntegrationTest {
             ps.executeUpdate();
         }
 
-        List<Employee> employees = employeeDaoBean.findEmployees();
+        List<Employee> employees = adminRunnerBean.call(employeeDaoBean::findEmployees);
 
         //List<Employee> employees = employeeDaoBean.findEmployees();
         assertEquals(Arrays.asList("John Doe"), employees.stream()
