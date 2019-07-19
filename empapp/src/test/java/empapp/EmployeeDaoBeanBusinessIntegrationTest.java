@@ -5,9 +5,9 @@ import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.xml.XmlDataSet;
 import org.dbunit.operation.DatabaseOperation;
+import org.flywaydb.core.Flyway;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -17,31 +17,22 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.annotation.Resource;
-import javax.annotation.security.RunAs;
 import javax.inject.Inject;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.rmi.Naming;
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Arquillian.class)
-public class EmployeeDaoBeanIntegrationTest {
+public class EmployeeDaoBeanBusinessIntegrationTest {
 
     @Inject
     private EmployeeDaoBean employeeDaoBean;
@@ -57,7 +48,7 @@ public class EmployeeDaoBeanIntegrationTest {
         WebArchive webArchive =
                 ShrinkWrap.create(WebArchive.class)
                         .addClasses(Employee.class, EmployeeDaoBean.class,
-                                DbMigrator.class, AdminRunnerBean.class)
+                                AdminRunnerBean.class, DbMigrator.class)
                         .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                         .addAsResource("META-INF/persistence.xml", "META-INF/persistence.xml")
                         .addAsResource("employees.xml", "employees.xml")
@@ -80,27 +71,28 @@ public class EmployeeDaoBeanIntegrationTest {
     }
 
     @Before
-    public void initDatabase()  throws Exception {
-        IDatabaseConnection conn = new DatabaseDataSourceConnection(dataSource);
-        IDataSet data = new XmlDataSet(EmployeeDaoBeanIntegrationTest.class.getResourceAsStream("/employees.xml"));
-        DatabaseOperation.CLEAN_INSERT.execute(conn, data);
+    public void purge() throws Exception {
+        try (Connection c = dataSource.getConnection();
+             PreparedStatement psDelete = c.prepareStatement("delete from employees")) {
+             psDelete.executeUpdate();
+        }
     }
 
     @Test
-    public void testFindEmployees() throws Exception {
-//        try (Connection c = dataSource.getConnection();
-//             PreparedStatement psDelete = c.prepareStatement("delete from employees");
-//             PreparedStatement ps = c.prepareStatement("insert into employees(emp_name) values (?)")) {
-//            psDelete.executeUpdate();
-//            ps.setString(1, "John Doe");
-//            ps.executeUpdate();
-//        }
+    public void testSaveThenList() {
+        // Given
+        employeeDaoBean.saveEmployee(new Employee("John Doe"));
+        employeeDaoBean.saveEmployee(new Employee("Jane Doe"));
 
-        List<Employee> employees = adminRunnerBean.call(employeeDaoBean::findEmployees);
+        // When
+        List<Employee> employees = employeeDaoBean.findEmployees();
+        assertEquals(2, employees.size());
 
-        //List<Employee> employees = employeeDaoBean.findEmployees();
-        assertEquals(Arrays.asList("Jack Doe", "Jane Doe", "John Doe"), employees.stream()
-                .map(Employee::getName).collect(Collectors.toList()));
+        Optional<Employee> employee = employeeDaoBean.findEmployeeByName("John Doe");
+        assertEquals("John Doe", employee.get().getName());
+
+        Employee loaded = employeeDaoBean.findEmployeeById(employee.get().getId());
+        assertEquals("John Doe", loaded.getName());
     }
 
 }

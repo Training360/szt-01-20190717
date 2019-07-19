@@ -16,7 +16,7 @@ public class EmployeeDaoBean {
     @PersistenceContext
     private EntityManager em;
 
-    @RolesAllowed("admin")
+//    @RolesAllowed("admin")
     public List<Employee> findEmployees() {
         return em.createQuery("select e from Employee e", Employee.class).getResultList();
     }
