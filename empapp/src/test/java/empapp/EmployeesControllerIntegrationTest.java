@@ -32,6 +32,9 @@ public class EmployeesControllerIntegrationTest {
     @Inject
     private EmployeesController employeesController;
 
+    @Inject
+    private StubFacesContextProvider stubFacesContextProvider;
+
     @Deployment
     public static WebArchive createDeployment() throws IOException {
         WebArchive webArchive =
@@ -78,6 +81,10 @@ public class EmployeesControllerIntegrationTest {
         List<Employee> employees = employeesController.getEmployees();
         assertEquals(1, employees.size());
         assertEquals("John Doe", employees.get(0).getName());
+
+        System.out.println(stubFacesContextProvider);
+        System.out.println(stubFacesContextProvider.getFlashAttribute());
+        assertEquals("Employee has created!", stubFacesContextProvider.getFlashAttribute().get("successMessage"));
     }
 
 }

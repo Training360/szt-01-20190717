@@ -23,6 +23,7 @@ public class EmployeesController {
     public EmployeesController(EmployeeServiceBean employeeServiceBean, FacesContextProvider facesContextProvider) {
         this.employeeServiceBean = employeeServiceBean;
         this.facesContextProvider = facesContextProvider;
+        System.out.println(facesContextProvider);
     }
 
     public EmployeesController() {
