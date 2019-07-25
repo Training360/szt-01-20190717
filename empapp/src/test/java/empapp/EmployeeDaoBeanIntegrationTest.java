@@ -1,39 +1,26 @@
 package empapp;
 
+import org.dbunit.assertion.DbUnitAssert;
 import org.dbunit.database.DatabaseDataSourceConnection;
-import org.dbunit.database.IDatabaseConnection;
-import org.dbunit.dataset.IDataSet;
+import org.dbunit.dataset.ITable;
+import org.dbunit.dataset.filter.DefaultColumnFilter;
 import org.dbunit.dataset.xml.XmlDataSet;
 import org.dbunit.operation.DatabaseOperation;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.annotation.Resource;
-import javax.annotation.security.RunAs;
 import javax.inject.Inject;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.rmi.Naming;
-import java.security.PrivilegedExceptionAction;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,8 +33,8 @@ public class EmployeeDaoBeanIntegrationTest {
     @Inject
     private EmployeeDaoBean employeeDaoBean;
 
-    @Inject
-    private AdminRunnerBean adminRunnerBean;
+//    @Inject
+//    private AdminRunnerBean adminRunnerBean;
 
     @Resource(lookup = "java:/jdbc/EmployeeDS")
     private DataSource dataSource;
@@ -57,13 +44,14 @@ public class EmployeeDaoBeanIntegrationTest {
         WebArchive webArchive =
                 ShrinkWrap.create(WebArchive.class)
                         .addClasses(Employee.class, EmployeeDaoBean.class,
-                                DbMigrator.class, AdminRunnerBean.class)
+                                AdminRunnerBean.class,
+                                DbMigrator.class)
                         .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                         .addAsResource("META-INF/persistence.xml", "META-INF/persistence.xml")
                         .addAsResource("employees.xml", "employees.xml")
 
-                        .addAsLibraries(Maven.resolver().resolve("org.flywaydb:flyway-core:5.2.4").withoutTransitivity().asSingleFile())
-                        .addAsLibraries(Maven.resolver().resolve("org.dbunit:dbunit:2.6.0").withoutTransitivity().asSingleFile())
+                        .addAsLibraries(Maven.configureResolver().loadPomFromFile("pom.xml").resolve("org.flywaydb:flyway-core").withoutTransitivity().asSingleFile())
+                        .addAsLibraries(Maven.configureResolver().loadPomFromFile("pom.xml").resolve("org.dbunit:dbunit").withoutTransitivity().asSingleFile())
                 ;
 
         Files.walk(Paths.get("src/main/resources"))
@@ -79,13 +67,6 @@ public class EmployeeDaoBeanIntegrationTest {
         return webArchive;
     }
 
-    @Before
-    public void initDatabase()  throws Exception {
-        IDatabaseConnection conn = new DatabaseDataSourceConnection(dataSource);
-        IDataSet data = new XmlDataSet(EmployeeDaoBeanIntegrationTest.class.getResourceAsStream("/employees.xml"));
-        DatabaseOperation.CLEAN_INSERT.execute(conn, data);
-    }
-
     @Test
     public void testFindEmployees() throws Exception {
 //        try (Connection c = dataSource.getConnection();
@@ -96,11 +77,32 @@ public class EmployeeDaoBeanIntegrationTest {
 //            ps.executeUpdate();
 //        }
 
-        List<Employee> employees = adminRunnerBean.call(employeeDaoBean::findEmployees);
+        DatabaseOperation.CLEAN_INSERT.execute(new DatabaseDataSourceConnection(dataSource),
+                new XmlDataSet(EmployeeDaoBeanIntegrationTest.class.getResourceAsStream("/employees.xml")));
 
-        //List<Employee> employees = employeeDaoBean.findEmployees();
-        assertEquals(Arrays.asList("Jack Doe", "Jane Doe", "John Doe"), employees.stream()
+        List<Employee> employees = employeeDaoBean.findEmployees();
+        assertEquals(Arrays.asList("Jack Doe", "John Doe"), employees.stream()
                 .map(Employee::getName).collect(Collectors.toList()));
+    }
+
+    @Test
+    public void testSaveEmployee() throws Exception {
+        DatabaseOperation.DELETE_ALL.execute(new DatabaseDataSourceConnection(dataSource),
+                new XmlDataSet(EmployeeDaoBeanIntegrationTest.class.getResourceAsStream("/employees.xml")));
+
+
+        employeeDaoBean.saveEmployee(new Employee("John Doe"));
+        employeeDaoBean.saveEmployee(new Employee("Jack Doe"));
+
+        ITable expectedTable = DefaultColumnFilter
+                .includedColumnsTable((new XmlDataSet(EmployeeDaoBeanIntegrationTest.class
+                .getResourceAsStream("/employees.xml"))
+                .getTable("employees")), new String[]{"emp_name"});
+        ITable databaseTable = DefaultColumnFilter
+                .includedColumnsTable(new DatabaseDataSourceConnection(dataSource)
+                .createDataSet().getTable("employees"), new String[]{"emp_name"});
+
+        new DbUnitAssert().assertEquals(expectedTable, databaseTable);
     }
 
 }

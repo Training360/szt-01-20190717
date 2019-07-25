@@ -18,7 +18,7 @@ public class EmployeeDaoBean {
 
 //    @RolesAllowed("admin")
     public List<Employee> findEmployees() {
-        return em.createQuery("select e from Employee e", Employee.class).getResultList();
+        return em.createQuery("select e from Employee e order by e.name", Employee.class).getResultList();
     }
 
     @Transactional

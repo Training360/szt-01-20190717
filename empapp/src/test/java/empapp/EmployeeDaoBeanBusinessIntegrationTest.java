@@ -1,11 +1,5 @@
 package empapp;
 
-import org.dbunit.database.DatabaseDataSourceConnection;
-import org.dbunit.database.IDatabaseConnection;
-import org.dbunit.dataset.IDataSet;
-import org.dbunit.dataset.xml.XmlDataSet;
-import org.dbunit.operation.DatabaseOperation;
-import org.flywaydb.core.Flyway;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -24,10 +18,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
@@ -37,9 +29,6 @@ public class EmployeeDaoBeanBusinessIntegrationTest {
     @Inject
     private EmployeeDaoBean employeeDaoBean;
 
-    @Inject
-    private AdminRunnerBean adminRunnerBean;
-
     @Resource(lookup = "java:/jdbc/EmployeeDS")
     private DataSource dataSource;
 
@@ -48,13 +37,13 @@ public class EmployeeDaoBeanBusinessIntegrationTest {
         WebArchive webArchive =
                 ShrinkWrap.create(WebArchive.class)
                         .addClasses(Employee.class, EmployeeDaoBean.class,
-                                AdminRunnerBean.class, DbMigrator.class)
+                                DbMigrator.class)
                         .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                         .addAsResource("META-INF/persistence.xml", "META-INF/persistence.xml")
                         .addAsResource("employees.xml", "employees.xml")
 
-                        .addAsLibraries(Maven.resolver().resolve("org.flywaydb:flyway-core:5.2.4").withoutTransitivity().asSingleFile())
-                        .addAsLibraries(Maven.resolver().resolve("org.dbunit:dbunit:2.6.0").withoutTransitivity().asSingleFile())
+                        .addAsLibraries(Maven.configureResolver().loadPomFromFile("pom.xml").resolve("org.flywaydb:flyway-core").withoutTransitivity().asSingleFile())
+                        .addAsLibraries(Maven.configureResolver().loadPomFromFile("pom.xml").resolve("org.dbunit:dbunit").withoutTransitivity().asSingleFile())
                 ;
 
         Files.walk(Paths.get("src/main/resources"))

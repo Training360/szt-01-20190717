@@ -4,4 +4,10 @@
         <property name="deploymentExportPath">target/deployments</property>
     </engine>
 
+    <container qualifier="wildfly" default="true">
+        <configuration>
+            <property name="managementAddress">${wildfly.host}</property>
+        </configuration>
+    </container>
+
 </arquillian>

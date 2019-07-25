@@ -8,10 +8,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.annotation.Resource;
 import javax.inject.Inject;
-import javax.sql.DataSource;
-
 import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;

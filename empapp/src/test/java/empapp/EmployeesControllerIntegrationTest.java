@@ -3,7 +3,6 @@ package empapp;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
@@ -47,8 +46,8 @@ public class EmployeesControllerIntegrationTest {
                         .addAsResource("META-INF/persistence.xml", "META-INF/persistence.xml")
                         .addAsResource("employees.xml", "employees.xml")
 
-                        .addAsLibraries(Maven.resolver().resolve("org.flywaydb:flyway-core:5.2.4").withoutTransitivity().asSingleFile())
-                        .addAsLibraries(Maven.resolver().resolve("org.dbunit:dbunit:2.6.0").withoutTransitivity().asSingleFile())
+                        .addAsLibraries(Maven.configureResolver().loadPomFromFile("pom.xml").resolve("org.flywaydb:flyway-core").withoutTransitivity().asSingleFile())
+                        .addAsLibraries(Maven.configureResolver().loadPomFromFile("pom.xml").resolve("org.dbunit:dbunit").withoutTransitivity().asSingleFile())
                 ;
 
         Files.walk(Paths.get("src/main/resources"))
