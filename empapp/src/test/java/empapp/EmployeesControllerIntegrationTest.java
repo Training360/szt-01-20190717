@@ -82,8 +82,6 @@ public class EmployeesControllerIntegrationTest {
         assertEquals(1, employees.size());
         assertEquals("John Doe", employees.get(0).getName());
 
-        System.out.println(stubFacesContextProvider);
-        System.out.println(stubFacesContextProvider.getFlashAttribute());
         assertEquals("Employee has created!", stubFacesContextProvider.getFlashAttribute().get("successMessage"));
     }
 
